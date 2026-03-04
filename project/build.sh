@@ -960,11 +960,8 @@ function build_ota(){
 		update_img="$RK_OTA_RESOURCE"
 	fi
 
-	[[ "$RK_ENABLE_RECOVERY" = "y" ]] && update_script="-C $OTA_SCRIPT_PATH RK_OTA_update.sh"
-
 	tar_cmd="tar -cvhf  $RK_PROJECT_OUTPUT_IMAGE/update_ota.tar \
-	             -C $RK_PROJECT_OUTPUT_IMAGE $update_img \
-	             $update_script"
+	             -C $RK_PROJECT_OUTPUT_IMAGE $update_img"
 	eval $tar_cmd
 
 	finish_build
@@ -1216,18 +1213,20 @@ function __PACKAGE_RESOURCES()
 		fi
 	fi
 
-	mkdir -p  $_iqfiles_dir
-	if [ -n "$RK_CAMERA_SENSOR_IQFILES" ];then
-		IFS=" ";for item in `echo $RK_CAMERA_SENSOR_IQFILES`
-		do
-			if [ -f "$RK_PROJECT_PATH_MEDIA/isp_iqfiles/$item" ];then
-				cp -rfa $RK_PROJECT_PATH_MEDIA/isp_iqfiles/$item $_iqfiles_dir
+	if [ -d "$RK_PROJECT_PATH_MEDIA/isp_iqfiles" ];then
+		mkdir -p  $_iqfiles_dir
+		if [ -n "$RK_CAMERA_SENSOR_IQFILES" ];then
+			IFS=" ";for item in `echo $RK_CAMERA_SENSOR_IQFILES`
+			do
+				if [ -f "$RK_PROJECT_PATH_MEDIA/isp_iqfiles/$item" ];then
+					cp -rfa $RK_PROJECT_PATH_MEDIA/isp_iqfiles/$item $_iqfiles_dir
+				fi
+			done; IFS=
+		else
+			msg_warn "Not found RK_CAMERA_SENSOR_IQFILES on the `realpath $BOARD_CONFIG`, copy all default for emmc or nand"
+			if [ "$RK_BOOT_MEDIUM" != "spi_nor" ];then
+				cp -rfa $RK_PROJECT_PATH_MEDIA/isp_iqfiles/* $_iqfiles_dir
 			fi
-		done; IFS=
-	else
-		msg_warn "Not found RK_CAMERA_SENSOR_IQFILES on the `realpath $BOARD_CONFIG`, copy all default for emmc or nand"
-		if [ "$RK_BOOT_MEDIUM" != "spi_nor" ];then
-			cp -rfa $RK_PROJECT_PATH_MEDIA/isp_iqfiles/* $_iqfiles_dir
 		fi
 	fi
 
@@ -1254,8 +1253,9 @@ function __PACKAGE_OEM()
 		(cd $RK_PROJECT_PACKAGE_ROOTFS_DIR/etc; ln -sf ../oem/usr/share/iqfiles ./)
 	fi
 
-	mkdir -p $(dirname $RK_PROJECT_FILE_OEM_SCRIPT)
-	cat > $RK_PROJECT_FILE_OEM_SCRIPT <<EOF
+	if [ -z "$RK_DISABLE_APPINIT" ]; then
+		mkdir -p $(dirname $RK_PROJECT_FILE_OEM_SCRIPT)
+		cat > $RK_PROJECT_FILE_OEM_SCRIPT <<EOF
 #!/bin/sh
 [ -f /etc/profile.d/RkEnv.sh ] && source /etc/profile.d/RkEnv.sh
 case \$1 in
@@ -1271,8 +1271,9 @@ case \$1 in
 esac
 EOF
 
-	chmod a+x $RK_PROJECT_FILE_OEM_SCRIPT
-	cp -f $RK_PROJECT_FILE_OEM_SCRIPT $RK_PROJECT_PACKAGE_ROOTFS_DIR/etc/init.d
+		chmod a+x $RK_PROJECT_FILE_OEM_SCRIPT
+		cp -f $RK_PROJECT_FILE_OEM_SCRIPT $RK_PROJECT_PACKAGE_ROOTFS_DIR/etc/init.d
+	fi
 }
 
 function __PACKAGE_USERDATA()
