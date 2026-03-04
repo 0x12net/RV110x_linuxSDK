@@ -611,6 +611,10 @@ else
 	# cp $(SYSDRV_DIR)/tools/board/buildroot/wpa_supplicant.conf $(SYSDRV_DIR_OUT_ROOTFS)/etc/wpa_supplicant.conf
  
 	cp -a $(SYSDRV_DIR)/tools/board/buildroot/overlay/. $(SYSDRV_DIR_OUT_ROOTFS)/
+	@echo -e "$(C_GREEN) ==sysdrv== downloading usb.ids from linux-usb.org  $(C_NORMAL)"
+	mkdir -p $(SYSDRV_DIR_OUT_ROOTFS)/usr/share/hwdata
+	wget -q --timeout=30 -O $(SYSDRV_DIR_OUT_ROOTFS)/usr/share/hwdata/usb.ids \
+		http://www.linux-usb.org/usb.ids || exit 1
 
 endif
 
