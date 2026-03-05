@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# ethaddr  Restore persistent MAC address for eth0 from /userdata/ethaddr,
+#          bring up the interface and start DHCP client.
+#
+
+start() {
+	ETHADDR1=$(ifconfig -a | grep "eth.*HWaddr" | awk '{print $5}')
+	if [ -f /userdata/ethaddr ]; then
+		ETHADDR2=$(cat /userdata/ethaddr)
+		if [ "$ETHADDR1" != "$ETHADDR2" ]; then
+			ifconfig eth0 down
+			ifconfig eth0 hw ether "$ETHADDR2"
+		fi
+	else
+		echo "$ETHADDR1" > /userdata/ethaddr
+	fi
+	ifconfig eth0 up && udhcpc -i eth0
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop|restart|reload)
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit 0

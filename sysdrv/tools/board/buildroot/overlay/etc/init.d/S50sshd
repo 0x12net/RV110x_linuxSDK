@@ -11,11 +11,8 @@ umask 077
 start() {
 	chown root:root /var/empty/
 
-	# Store host keys in userdata (persistent across firmware updates)
-	mkdir -p /userdata/ssh
-	chmod 700 /userdata/ssh
 	for type in rsa ecdsa ed25519; do
-		key="/userdata/ssh/ssh_host_${type}_key"
+		key="/etc/ssh/ssh_host_${type}_key"
 		[ -f "$key" ] || /usr/bin/ssh-keygen -t "$type" -f "$key" -N ""
 	done
 

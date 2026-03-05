@@ -1,0 +1,123 @@
+#!/bin/sh
+#
+# userdata-links  Create symlinks from /etc (and other paths) to /userdata
+#                 so configuration changes persist across firmware updates.
+#
+
+# --- hostname ---
+hostname_setup() {
+	UD=/userdata
+	if [ ! -L /etc/hostname ]; then
+		cp /etc/hostname $UD/hostname
+	fi
+
+	ln -sf $UD/hostname /etc/hostname
+}
+
+# --- network/interfaces ---
+network_setup() {
+	UD=/userdata
+	if [ ! -L /etc/network/interfaces ]; then
+		cp /etc/network/interfaces $UD/network_interfaces
+	fi
+
+	ln -sf $UD/network_interfaces /etc/network/interfaces
+}
+
+# --- ip6tables ---
+ip6tables_setup() {
+	UD=/userdata
+	if [ ! -L /etc/ip6tables.conf ]; then
+		cp /etc/ip6tables.conf $UD/ip6tables
+	fi
+
+	ln -sf $UD/ip6tables /etc/ip6tables.conf
+}
+
+# --- iptables ---
+iptables_setup() {
+	UD=/userdata
+	if [ ! -L /etc/iptables.conf ]; then
+		cp /etc/iptables.conf $UD/iptables
+	fi
+
+	ln -sf $UD/iptables /etc/iptables.conf
+}
+
+# --- shadow ---
+shadow_setup() {
+	UD=/userdata
+	if [ ! -L /etc/shadow ]; then
+		cp /etc/shadow $UD/shadow
+	fi
+
+	ln -sf $UD/shadow /etc/shadow
+}
+
+# --- ssh authorized_keys + host keys ---
+ssh_setup() {
+	UD=/userdata/ssh
+	mkdir -p $UD
+	chmod 700 $UD
+
+	mkdir -p /root/.ssh/
+	chmod 700 /root/.ssh/
+
+	ln -sf $UD/authorized_keys /root/.ssh/authorized_keys
+	
+	ln -sf $UD/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key
+	ln -sf $UD/ssh_host_ecdsa_key /etc/ssh/ssh_host_ecdsa_key
+	ln -sf $UD/ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key
+
+	ln -sf $UD/ssh_host_rsa_key.pub /etc/ssh/ssh_host_rsa_key.pub
+	ln -sf $UD/ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_ecdsa_key.pub
+	ln -sf $UD/ssh_host_ed25519_key.pub /etc/ssh/ssh_host_ed25519_key.pub
+}
+
+# --- tailscale ---
+tailscale_setup() {
+	UD=/userdata/tailscale
+	mkdir -p $UD
+	chmod 700 $UD
+	
+	if [ ! -L /etc/tailscale ]; then
+		rm -rf /etc/tailscale
+		ln -sf $UD /etc/tailscale
+	fi
+}
+
+# --- wireguard ---
+wireguard_setup() {
+	UD=/userdata/wireguard
+	mkdir -p $UD
+	chmod 700 $UD
+	
+	if [ ! -L /etc/wireguard ]; then
+		rm -rf /etc/wireguard
+		ln -sf $UD /etc/wireguard
+	fi
+}
+
+start() {
+	shadow_setup
+	hostname_setup
+	network_setup
+	ip6tables_setup
+	iptables_setup
+	ssh_setup
+	tailscale_setup
+	wireguard_setup
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop|restart|reload)
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit 0
