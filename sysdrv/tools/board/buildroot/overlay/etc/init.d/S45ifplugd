@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# ifplugd    Monitors Ethernet link state and runs ifup/ifdown on changes.
+#
+
+DAEMON=/usr/sbin/ifplugd
+INTERFACES="eth0"
+PIDDIR=/run/ifplugd
+
+[ -x "$DAEMON" ] || exit 0
+
+start() {
+	mkdir -p "$PIDDIR"
+	for iface in $INTERFACES; do
+		echo "Starting ifplugd for $iface..."
+		"$DAEMON" -i "$iface" \
+			-p "$PIDDIR/ifplugd.$iface.pid" \
+			-r /etc/ifplugd/ifplugd.action
+	done
+}
+
+stop() {
+	for iface in $INTERFACES; do
+		echo "Stopping ifplugd for $iface..."
+		"$DAEMON" -k -i "$iface" \
+			-p "$PIDDIR/ifplugd.$iface.pid"
+	done
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+  start)   start ;;
+  stop)    stop ;;
+  restart) restart ;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit 0
