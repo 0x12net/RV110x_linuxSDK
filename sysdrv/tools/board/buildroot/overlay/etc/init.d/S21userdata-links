@@ -8,7 +8,9 @@
 hostname_setup() {
 	UD=/userdata
 	if [ ! -L /etc/hostname ]; then
-		cp /etc/hostname $UD/hostname
+		if [ ! -f $UD/hostname ]; then
+			cp /etc/hostname $UD/hostname
+		fi
 	fi
 
 	ln -sf $UD/hostname /etc/hostname
@@ -18,7 +20,9 @@ hostname_setup() {
 network_setup() {
 	UD=/userdata
 	if [ ! -L /etc/network/interfaces ]; then
-		cp /etc/network/interfaces $UD/network_interfaces
+		if [ ! -f $UD/network_interfaces ]; then
+			cp /etc/network/interfaces $UD/network_interfaces
+		fi
 	fi
 
 	ln -sf $UD/network_interfaces /etc/network/interfaces
@@ -28,7 +32,9 @@ network_setup() {
 ip6tables_setup() {
 	UD=/userdata
 	if [ ! -L /etc/ip6tables.conf ]; then
-		cp /etc/ip6tables.conf $UD/ip6tables
+		if [ ! -f $UD/ip6tables ]; then
+			cp /etc/ip6tables.conf $UD/ip6tables
+		fi
 	fi
 
 	ln -sf $UD/ip6tables /etc/ip6tables.conf
@@ -38,7 +44,9 @@ ip6tables_setup() {
 iptables_setup() {
 	UD=/userdata
 	if [ ! -L /etc/iptables.conf ]; then
-		cp /etc/iptables.conf $UD/iptables
+		if [ ! -f $UD/iptables ]; then
+			cp /etc/iptables.conf $UD/iptables
+		fi
 	fi
 
 	ln -sf $UD/iptables /etc/iptables.conf
@@ -48,7 +56,9 @@ iptables_setup() {
 shadow_setup() {
 	UD=/userdata
 	if [ ! -L /etc/shadow ]; then
-		cp /etc/shadow $UD/shadow
+		if [ ! -f $UD/shadow ]; then
+			cp /etc/shadow $UD/shadow
+		fi
 	fi
 
 	ln -sf $UD/shadow /etc/shadow
