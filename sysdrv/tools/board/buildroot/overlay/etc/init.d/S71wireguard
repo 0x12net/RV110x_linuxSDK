@@ -19,7 +19,7 @@ bring_up_loop() {
 			echo "WireGuard ${iface}: up"
 			break
 		fi
-		echo "WireGuard ${iface}: failed, retrying in ${RETRY_INTERVAL}s"
+		#echo "WireGuard ${iface}: failed, retrying in ${RETRY_INTERVAL}s"
 		sleep ${RETRY_INTERVAL}
 	done
 }

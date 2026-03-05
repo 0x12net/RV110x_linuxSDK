@@ -1,0 +1,14 @@
+#!/bin/sh
+# Called by ifplugd when link state changes.
+# $1 = interface name, $2 = "up" or "down"
+
+IFACE="$1"
+ACTION="$2"
+
+case "$ACTION" in
+  up)   ifup   "$IFACE" ;;
+  down) ifdown "$IFACE" ;;
+  *)
+	echo "Usage: $0 <iface> {up|down}"
+	exit 1
+esac
