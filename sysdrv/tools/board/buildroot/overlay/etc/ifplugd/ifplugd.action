@@ -6,9 +6,17 @@ IFACE="$1"
 ACTION="$2"
 
 case "$ACTION" in
-  up)   ifup   "$IFACE" ;;
-  down) ifdown "$IFACE" ;;
+  up)
+    dhcpcd -k "$IFACE" 2>/dev/null || true
+    ip addr flush dev "$IFACE" 2>/dev/null
+    ifup "$IFACE"
+    ;;
+  down)
+    dhcpcd -k "$IFACE" 2>/dev/null || true
+    ifdown "$IFACE" 2>/dev/null || true
+    ip addr flush dev "$IFACE" 2>/dev/null
+    ;;
   *)
-	echo "Usage: $0 <iface> {up|down}"
-	exit 1
+    echo "Usage: $0 <iface> {up|down}"
+    exit 1
 esac

@@ -13,17 +13,16 @@ start() {
 	mkdir -p "$PIDDIR"
 	for iface in $INTERFACES; do
 		echo "Starting ifplugd for $iface..."
-		"$DAEMON" -i "$iface" \
-			-p "$PIDDIR/ifplugd.$iface.pid" \
-			-r /etc/ifplugd/ifplugd.action
+		"$DAEMON" -n -i "$iface" -r /etc/ifplugd/ifplugd.action &
+		echo $! > "$PIDDIR/ifplugd.$iface.pid"
 	done
 }
 
 stop() {
 	for iface in $INTERFACES; do
 		echo "Stopping ifplugd for $iface..."
-		"$DAEMON" -k -i "$iface" \
-			-p "$PIDDIR/ifplugd.$iface.pid"
+		start-stop-daemon -K -p "$PIDDIR/ifplugd.$iface.pid" -o
+		rm -f "$PIDDIR/ifplugd.$iface.pid"
 	done
 }
 
