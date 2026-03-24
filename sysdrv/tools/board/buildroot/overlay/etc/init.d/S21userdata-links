@@ -96,6 +96,18 @@ tailscale_setup() {
 	fi
 }
 
+# --- wpa_supplicant ---
+wpa_supplicant_setup() {
+	UD=/userdata
+	if [ ! -L /etc/wpa_supplicant.conf ]; then
+		if [ ! -f $UD/wpa_supplicant.conf ]; then
+			cp /etc/wpa_supplicant.conf $UD/wpa_supplicant.conf
+		fi
+	fi
+
+	ln -sf $UD/wpa_supplicant.conf /etc/wpa_supplicant.conf
+}
+
 # --- wireguard ---
 wireguard_setup() {
 	UD=/userdata/wireguard
@@ -117,6 +129,7 @@ start() {
 	ssh_setup
 	tailscale_setup
 	wireguard_setup
+	wpa_supplicant_setup
 }
 
 case "$1" in

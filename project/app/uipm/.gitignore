@@ -1,0 +1,14 @@
+node_modules/
+build/
+dist/
+frontend/node_modules/
+frontend/dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+server
+rootfs
+cover.out

@@ -112,8 +112,6 @@
 		compatible = "restart-poweroff";
 	};
 
-/*
-//NEW
 	sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
 		pinctrl-names = "default";
@@ -130,7 +128,7 @@
 		BT,wake_host_irq = <&gpio1 RK_PA2 GPIO_ACTIVE_HIGH>;
 		status = "okay";
 	};
-*/
+
 /*
 	recovery-key {
 		compatible = "adc-keys";
@@ -373,11 +371,11 @@
 		gpio = <&gpio5 5 GPIO_ACTIVE_LOW>;
 	};*/
 
-	/*wireless_wlan: wireless-wlan {
+	wireless_wlan: wireless-wlan {
 		compatible = "wlan-platdata";
 		wifi_chip_type = "AIC8800DC";
 		status = "okay";
-	};*/
+	};
 
 };
 
@@ -402,25 +400,16 @@
 
 
 /**********EMMC**********/
-//NEW
-/*&emmc {
+&emmc {
 	bus-width = <8>;
 	cap-mmc-highspeed;
 	non-removable;
-	// mmc-hs200-1_8v;
 	rockchip,default-sample-phase = <90>;
 	no-sdio;
 	no-sd;
-	memory-region-ecsd = <&mmc_ecsd>;
 	post-power-on-delay-ms = <0>;
 	status = "okay";
 };
-
-&fiq_debugger {
-	rockchip,irq-mode-enable = <1>;
-	status = "okay";
-};
-*/
 
 
 /***************************** audio ********************************/
@@ -514,9 +503,8 @@
 	status = "okay";
 };
 
-
 /**********SDCARD**********/
-&sdmmc {
+/*&sdmmc {
 
 	max-frequency = <200000000>;
 	no-sdio;
@@ -530,12 +518,10 @@
 	pinctrl-1 = <&sdmmc0_idle_pins &sdmmc0_det>;
 	vmmc-supply = <&vcc3v3_sd>;
 	status = "okay";
-};
-
+};*/
 
 /**********SDIO-WIFI**********/
-//NEW
-/*&sdmmc {
+&sdmmc {
 	max-frequency = <50000000>;
 	bus-width = <4>;
 	cap-sd-highspeed;
@@ -556,12 +542,11 @@
 	sdmmc0{
 		sdmmc0_det: sdmmc0-det {
 			rockchip,pins =
-				// sdmmc0_det 
+				/* sdmmc0_det */
 				<3 RK_PA1 1 &pcfg_pull_down>;
 		};
 	};
 };
-*/
 
 &sfc {
 	status = "okay";

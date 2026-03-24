@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# wpa-supplicant   Start/stop wpa_supplicant for wireless interfaces.
+#
+
+DAEMON=/usr/sbin/wpa_supplicant
+CONF=/etc/wpa_supplicant.conf
+PIDFILE=/run/wpa_supplicant.pid
+CTRL_DIR=/var/run/wpa_supplicant
+INSMOD_WIFI=/oem/usr/ko/insmod_wifi.sh
+
+[ -x "$DAEMON" ] || exit 0
+[ -f "$CONF" ]   || exit 0
+
+find_wlan_iface() {
+	for dir in /sys/class/net/*/wireless; do
+		[ -d "$dir" ] || continue
+		basename "$(dirname "$dir")"
+		return
+	done
+}
+
+start() {
+	if [ -x "$INSMOD_WIFI" ]; then
+		echo "Loading WiFi modules..."
+		"$INSMOD_WIFI"
+	fi
+
+	IFACE=$(find_wlan_iface)
+	[ -n "$IFACE" ] || { echo "No wireless interface found, skipping wpa_supplicant"; exit 0; }
+	grep -qE "^(auto|allow-hotplug)[[:space:]]+$IFACE" /etc/network/interfaces 2>/dev/null \
+		|| { echo "wpa_supplicant: $IFACE not in /etc/network/interfaces, skipping"; exit 0; }
+	mkdir -p "$CTRL_DIR"
+	echo "Starting wpa_supplicant on $IFACE..."
+	"$DAEMON" -B -i "$IFACE" -c "$CONF" -P "$PIDFILE"
+}
+
+stop() {
+	if [ -f "$PIDFILE" ]; then
+		echo "Stopping wpa_supplicant..."
+		start-stop-daemon -K -p "$PIDFILE" -o
+		rm -f "$PIDFILE"
+	fi
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+  start)   start ;;
+  stop)    stop ;;
+  restart) restart ;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit 0

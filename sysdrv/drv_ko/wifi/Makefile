@@ -68,6 +68,10 @@ ifneq ($(findstring $(RK_ENABLE_WIFI_CHIP),"AIC8800D80_SDIO"),)
 	@make -C aic8800_sdio
 endif
 
+ifneq ($(findstring $(RK_ENABLE_WIFI_CHIP),"AIC8800DC"),)
+	@make -C aic8800_sdio
+endif
+
 
 ifneq ($(findstring $(RK_ENABLE_WIFI_CHIP),"AIC8800MC"),)
 	@make -C aic8800_netdrv/

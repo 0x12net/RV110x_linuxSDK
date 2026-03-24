@@ -82,6 +82,7 @@ modules:
 	cp $(shell pwd)/aic8800_btlpm/aic8800_btlpm.ko $(M_OUT_DIR)
 	mkdir -p $(M_OUT_DIR)/aic_fw
 	cp $(shell pwd)/fw/aic8800D80/* $(M_OUT_DIR)/aic_fw -r
+	cp $(shell pwd)/fw/aic8800DC/* $(M_OUT_DIR)/aic_fw -r
 
 install:
 	mkdir -p $(MODDESTDIR)
