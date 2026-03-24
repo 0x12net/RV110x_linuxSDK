@@ -28,8 +28,6 @@ start() {
 
 	IFACE=$(find_wlan_iface)
 	[ -n "$IFACE" ] || { echo "No wireless interface found, skipping wpa_supplicant"; exit 0; }
-	grep -qE "^(auto|allow-hotplug)[[:space:]]+$IFACE" /etc/network/interfaces 2>/dev/null \
-		|| { echo "wpa_supplicant: $IFACE not in /etc/network/interfaces, skipping"; exit 0; }
 	mkdir -p "$CTRL_DIR"
 	echo "Starting wpa_supplicant on $IFACE..."
 	"$DAEMON" -B -i "$IFACE" -c "$CONF" -P "$PIDFILE"

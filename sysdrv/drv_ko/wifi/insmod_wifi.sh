@@ -108,12 +108,12 @@ fi
 
 #aic8800
 if [ -n "$(cat /sys/bus/sdio/devices/*/uevent | grep "C8A1\:C18D")" ]; then
-	insmod cfg80211.ko
-	insmod libarc4.ko
-	insmod ctr.ko
-	insmod ccm.ko
-	insmod libaes.ko
-	insmod aes_generic.ko
+	#insmod cfg80211.ko   # built into aic8800_fdrv.ko
+	#insmod libarc4.ko   # built into aic8800_fdrv.ko
+	#insmod ctr.ko       # built into aic8800_fdrv.ko
+	#insmod ccm.ko       # built into aic8800_fdrv.ko
+	#insmod libaes.ko    # built into aic8800_fdrv.ko
+	#insmod aes_generic.ko # built into aic8800_fdrv.ko
 	insmod aic8800_bsp.ko
 	sleep 0.2
 	insmod aic8800_fdrv.ko
