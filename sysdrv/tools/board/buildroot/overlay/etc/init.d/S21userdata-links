@@ -4,64 +4,89 @@
 #                 so configuration changes persist across firmware updates.
 #
 
-# --- hostname ---
-hostname_setup() {
-	UD=/userdata
-	if [ ! -L /etc/hostname ]; then
-		if [ ! -f $UD/hostname ]; then
-			cp /etc/hostname $UD/hostname
+# make_link SRC DST
+#   SRC: original file path (symlink will be placed here)
+#   DST: persistent copy in /userdata
+#
+# First boot:  SRC renamed to SRC.orig, copied to DST, symlink created.
+# Next boots:  SRC is already a symlink — nothing to do.
+# Broken link: DST missing — restore from SRC.orig, recreate symlink.
+make_link() {
+	local src="$1"
+	local dst="$2"
+	local backup="${src}.orig"
+
+	# Broken symlink: target missing — restore from .orig backup
+	if [ -L "$src" ] && [ ! -e "$src" ]; then
+		rm "$src"
+		if [ -f "$backup" ]; then
+			cp "$backup" "$dst"
 		fi
+		ln -sf "$dst" "$src"
+		return
 	fi
 
-	ln -sf $UD/hostname /etc/hostname
+	# Not yet a symlink: rename original, copy to userdata, create link
+	if [ ! -L "$src" ]; then
+		if [ -e "$src" ]; then
+			mv "$src" "$backup"
+		fi
+		if [ ! -f "$dst" ] && [ -f "$backup" ]; then
+			cp "$backup" "$dst"
+		fi
+		ln -sf "$dst" "$src"
+	fi
+}
+
+# make_link_dir SRC DST
+#   Same as make_link but for directories.
+make_link_dir() {
+	local src="$1"
+	local dst="$2"
+	local backup="${src}.orig"
+
+	# Broken symlink: target missing — recreate
+	if [ -L "$src" ] && [ ! -e "$src" ]; then
+		rm "$src"
+		if [ -d "$backup" ] && [ ! -d "$dst" ]; then
+			cp -a "$backup" "$dst"
+		fi
+		ln -sf "$dst" "$src"
+		return
+	fi
+
+	# Not yet a symlink: rename original dir, create link
+	if [ ! -L "$src" ]; then
+		if [ -e "$src" ]; then
+			mv "$src" "$backup"
+		fi
+		ln -sf "$dst" "$src"
+	fi
+}
+
+# --- hostname ---
+hostname_setup() {
+	make_link /etc/hostname /userdata/hostname
 }
 
 # --- network/interfaces ---
 network_setup() {
-	UD=/userdata
-	if [ ! -L /etc/network/interfaces ]; then
-		if [ ! -f $UD/network_interfaces ]; then
-			cp /etc/network/interfaces $UD/network_interfaces
-		fi
-	fi
-
-	ln -sf $UD/network_interfaces /etc/network/interfaces
+	make_link /etc/network/interfaces /userdata/network_interfaces
 }
 
 # --- ip6tables ---
 ip6tables_setup() {
-	UD=/userdata
-	if [ ! -L /etc/ip6tables.conf ]; then
-		if [ ! -f $UD/ip6tables ]; then
-			cp /etc/ip6tables.conf $UD/ip6tables
-		fi
-	fi
-
-	ln -sf $UD/ip6tables /etc/ip6tables.conf
+	make_link /etc/ip6tables.conf /userdata/ip6tables
 }
 
 # --- iptables ---
 iptables_setup() {
-	UD=/userdata
-	if [ ! -L /etc/iptables.conf ]; then
-		if [ ! -f $UD/iptables ]; then
-			cp /etc/iptables.conf $UD/iptables
-		fi
-	fi
-
-	ln -sf $UD/iptables /etc/iptables.conf
+	make_link /etc/iptables.conf /userdata/iptables
 }
 
 # --- shadow ---
 shadow_setup() {
-	UD=/userdata
-	if [ ! -L /etc/shadow ]; then
-		if [ ! -f $UD/shadow ]; then
-			cp /etc/shadow $UD/shadow
-		fi
-	fi
-
-	ln -sf $UD/shadow /etc/shadow
+	make_link /etc/shadow /userdata/shadow
 }
 
 # --- ssh authorized_keys + host keys ---
@@ -74,7 +99,7 @@ ssh_setup() {
 	chmod 700 /root/.ssh/
 
 	ln -sf $UD/authorized_keys /root/.ssh/authorized_keys
-	
+
 	ln -sf $UD/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key
 	ln -sf $UD/ssh_host_ecdsa_key /etc/ssh/ssh_host_ecdsa_key
 	ln -sf $UD/ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key
@@ -89,23 +114,13 @@ tailscale_setup() {
 	UD=/userdata/tailscale
 	mkdir -p $UD
 	chmod 700 $UD
-	
-	if [ ! -L /etc/tailscale ]; then
-		rm -rf /etc/tailscale
-		ln -sf $UD /etc/tailscale
-	fi
+
+	make_link_dir /etc/tailscale $UD
 }
 
 # --- wpa_supplicant ---
 wpa_supplicant_setup() {
-	UD=/userdata
-	if [ ! -L /etc/wpa_supplicant.conf ]; then
-		if [ ! -f $UD/wpa_supplicant.conf ]; then
-			cp /etc/wpa_supplicant.conf $UD/wpa_supplicant.conf
-		fi
-	fi
-
-	ln -sf $UD/wpa_supplicant.conf /etc/wpa_supplicant.conf
+	make_link /etc/wpa_supplicant.conf /userdata/wpa_supplicant.conf
 }
 
 # --- wireguard ---
@@ -113,11 +128,8 @@ wireguard_setup() {
 	UD=/userdata/wireguard
 	mkdir -p $UD
 	chmod 700 $UD
-	
-	if [ ! -L /etc/wireguard ]; then
-		rm -rf /etc/wireguard
-		ln -sf $UD /etc/wireguard
-	fi
+
+	make_link_dir /etc/wireguard $UD
 }
 
 start() {

@@ -942,6 +942,25 @@ EOF
 	finish_build
 }
 
+function build_ab_symlinks(){
+	local IFS=, part part_name base link_img base_img
+
+	for part in $GLOBAL_PARTITIONS; do
+		part_name=$(echo "$part" | cut -d '(' -f2 | cut -d ')' -f1)
+		base="${part_name%_[ab]}"
+		[ "$base" = "$part_name" ] && continue
+
+		base_img="$RK_PROJECT_OUTPUT_IMAGE/${base}.img"
+		link_img="$RK_PROJECT_OUTPUT_IMAGE/${part_name}.img"
+
+		[ -f "$base_img" ] || continue
+		[ -e "$link_img" ] && continue
+
+		ln -sf "${base}.img" "$link_img"
+		msg_info "Created symlink: ${part_name}.img -> ${base}.img"
+	done
+}
+
 function build_ota(){
 	check_config RK_ENABLE_RECOVERY || check_config RK_ENABLE_OTA || return 0
 
@@ -2285,6 +2304,7 @@ function build_firmware(){
 	__PACKAGE_USERDATA
 	build_mkimg userdata $RK_PROJECT_PACKAGE_USERDATA_DIR
 
+	build_ab_symlinks
 	build_tftp_sd_update
 
 	[ "$RK_ENABLE_RECOVERY" = "y" -o "$RK_ENABLE_OTA" = "y" ] && build_ota
